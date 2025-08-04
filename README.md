@@ -5,24 +5,34 @@ The frequency distributions of DNA k-mers are shaped by fundamental biological p
 
 ## 📂 Directory Overview
 
-├── artificial_genomes/   # Contains the scripts for the creation and fitting of shuffled and synthetic genomes as well as the figures from Figure 7.
+- **`artificial_genomes/`**  
+  Contains the scripts for the creation and fitting of shuffled and synthetic genomes,  
+  as well as the figures from Figure 7.
 
-├── determinants/         # Analysis on the factors that determine the goodness of fit of the Zipf-Mandelbrot and the truncated power law. The subfolder genome_size has all the figures relevant to genome size (Figure 6 and Supplementary Figure 6). gc_content relates to Figure 6 and Supplementary Figure 7 and genic_percentage to Figure 6 and Supplementary Figure 8.
+- **`determinants/`**  
+  Analysis on the factors that determine the goodness of fit of the Zipf-Mandelbrot and the truncated power law.  
+  The subfolder `genome_size` has all the figures relevant to genome size (Figure 6 and Supplementary Figure 6).  
+  `gc_content` relates to Figure 6 and Supplementary Figure 7, and `genic_percentage` to Figure 6 and Supplementary Figure 8.
 
-├── global_patterns/      # Refers to the creation of the mean counts vs ranks plots (Figure 1), the Lorentz curves (Figure 1, Supplementary Figure 1) and the gini coefficients (Figure 1, Supplementary Figure 2).
+- **`global_patterns/`**  
+  Refers to the creation of the mean counts vs ranks plots (Figure 1),  
+  the Lorentz curves (Figure 1, Supplementary Figure 1),  
+  and the Gini coefficients (Figure 1, Supplementary Figure 2).
 
-├── heaps_law/            # K-mer Vocabulary-growth experiments using Heap's Law. Represents figures 2 and 3.
+- **`heaps_law/`**  
+  K-mer vocabulary-growth experiments using Heap's Law. Represents Figures 2 and 3.
 
-├── model_fits/           # Contains the main results for the fit of the Zipf-Mandelbrot and the truncated power law to 225k complete genomes. Particularly Results_truncated.xlsx and Results_Zipf_Mandelbrot.xlsx contain information about the original genome (such as ascension, assembly and genome size) as well as the fitted parameters for each of the two distributions for k-mer lengths 3,4,5,6,7. Corresponds to Figure 4 and Supplementary Figures 4,5. 
+- **`model_fits/`**  
+  Contains the main results for the fit of the Zipf-Mandelbrot and the truncated power law to 225k complete genomes.  
+  Particularly, `Results_truncated.xlsx` and `Results_Zipf_Mandelbrot.xlsx` contain information about the original genome  
+  (such as accession, assembly, and genome size), as well as the fitted parameters for each of the two distributions  
+  for k-mer lengths 3, 4, 5, 6, and 7. Corresponds to Figure 4 and Supplementary Figures 4 and 5.
 
-└── not_zipf/             # Analysis on why genomes deviate from a plain Zipf's Law. Contains figures from Figure 4 and Supplementary Figure 3.
+- **`not_zipf/`**  
+  Analysis on why genomes deviate from a plain Zipf's Law.  
+  Contains figures from Figure 4 and Supplementary Figure 3.
 
 
 ## 🧰 Libraries Used
 
-- **[NumPy](https://numpy.org/):**
-- **[Biopython](https://biopython.org/):**
-- **[SciPy](https://scipy.org/):**
-- **[Matplotlib](https://matplotlib.org/):** 
-- **[Seaborn](https://seaborn.pydata.org/):**
-- **[Pandas](https://pandas.pydata.org/):**
+• [NumPy](https://numpy.org/) • [Biopython](https://biopython.org/) • [SciPy](https://scipy.org/) • [Matplotlib](https://matplotlib.org/) • [Seaborn](https://seaborn.pydata.org/) • [Pandas](https://pandas.pydata.org/)
