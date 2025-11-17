@@ -20,7 +20,7 @@ taxonomies = {
     'Archaea': ['archaea'],
     'Bacteria': ['bacteria'],
     'Viral': ['viral'],
-    'Eukaryote': ['protozoa', 'vertebrate', 'vertebrate(other)', 'fungi', 'plant', 'invertebrate']
+    'Eukaryote': ['protozoa', 'vertebrate', 'vertebrate_other', 'fungi', 'plant', 'invertebrate', 'vertebrate_mammalian']
 }
 
 def filter_taxonomy(df, tax_list):

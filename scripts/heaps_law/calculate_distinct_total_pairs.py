@@ -6,7 +6,7 @@ from pathlib import Path
 from Bio import SeqIO
 import sys
 
-_COMPLEMENT = str.maketrans({'A':'T','T':'A','C':'G','G':'C'})
+_COMPLEMENT = str.maketrans({'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'})
 
 def extract_genome_name(file_path):
     return Path(file_path).name
@@ -49,7 +49,7 @@ def generate_kmers_progressive_streaming(path, k, output_file, genome_name):
     seen = set()
     total_count = 0
     done = set()              # which %'s we’ve already recorded
-    pending = set(range(1,101))
+    pending = set(range(1, 101))
 
     with open(output_file, 'w') as out:
         # slide over each valid run
@@ -72,7 +72,7 @@ def generate_kmers_progressive_streaming(path, k, output_file, genome_name):
                         # slide across this clean run
                         for r in range(i, j - k + 1):
                             kmer = seq[r:r+k]
-                            can  = canonical_kmer(kmer)
+                            can = canonical_kmer(kmer)
                             seen.add(can)
                             total_count += 1
                             proc += 1
@@ -102,9 +102,10 @@ def process_genome_file(path, k, output_dir):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('scheduler_file')
-    p.add_argument('bucket_id')
     p.add_argument('k', type=int)
     p.add_argument('output_dir')
+    p.add_argument('--bucket-id', type=str, default=None,
+                  help="Bucket id to process; if omitted, uses SLURM_PROCID.")
     args = p.parse_args()
 
     if not os.path.exists(args.scheduler_file):
@@ -112,13 +113,22 @@ def main():
     if args.k < 1:
         sys.exit(f"k must be ≥1, got {args.k}")
 
+    if args.bucket_id is not None:
+        bucket_id = args.bucket_id
+    else:
+        bucket_id = os.environ.get("SLURM_PROCID")
+        if bucket_id is None:
+            sys.exit("No --bucket-id provided and SLURM_PROCID is not set.")
+
     os.makedirs(args.output_dir, exist_ok=True)
     with open(args.scheduler_file) as f:
         sched = json.load(f)
-    if args.bucket_id not in sched:
-        sys.exit(f"Bucket '{args.bucket_id}' not in scheduler")
 
-    for fasta in sched[args.bucket_id]:
+    if bucket_id not in sched:
+        print(f"Bucket '{bucket_id}' not in scheduler; nothing to do.", file=sys.stderr)
+        return
+
+    for fasta in sched[bucket_id]:
         if not os.path.exists(fasta):
             print(f"Missing file, skipping: {fasta}", file=sys.stderr)
             continue

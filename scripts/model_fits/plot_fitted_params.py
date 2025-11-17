@@ -27,17 +27,31 @@ taxonomies = {
     'Archaea': ['archaea'],
     'Bacteria': ['bacteria'],
     'Viral': ['viral'],
-    'Eukaryote': ['protozoa', 'vertebrate', 'vertebrate(other)', 'fungi', 'plant', 'invertebrate']
+    'Eukaryote': ['protozoa', 'vertebrate', 'vertebrate_other', 'fungi', 'plant', 'invertebrate']
 }
 
 colors = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5']
 indices = np.arange(len(k_values))
+
+def _fmt(x):
+    try:
+        if pd.isna(x):
+            return "nan"
+        return f"{float(x):.6g}"
+    except Exception:
+        return "nan"
 
 for tax_name, tax_list in taxonomies.items():
     stats = {
         dist: {param: {'mean': [], 'std': []} for param in params}
         for dist, params in distribution_params.items()
     }
+    extra = {
+        dist: {param: {'ci_low': [], 'ci_high': []}
+            for param in params}
+        for dist, params in distribution_params.items()
+    }
+
     print(f"\nTaxonomy: {tax_name}")
     for dist, path in files.items():
         for k in k_values:
@@ -47,14 +61,33 @@ for tax_name, tax_list in taxonomies.items():
             neg_count = (df['R2'] < 0).sum()
             print(f"  {dist}, k={k}: excluded {neg_count} negative R2 values")
             df = df[df['R2'] >= 0]
+
             for param in distribution_params[dist]:
                 vals = pd.to_numeric(df[param], errors='coerce').dropna()
+
                 stats[dist][param]['mean'].append(vals.mean() if not vals.empty else np.nan)
-                stats[dist][param]['std'].append(vals.std() if not vals.empty else np.nan)
+                stats[dist][param]['std'].append(vals.std(ddof=1) if len(vals) > 1 else (0.0 if len(vals)==1 else np.nan))
+
+                # CI
+                n = int(vals.shape[0])
+                mean = stats[dist][param]['mean'][-1]
+                sd = stats[dist][param]['std'][-1]
+                if n and n > 1 and not pd.isna(mean) and not pd.isna(sd):
+                    half_width = 1.96 * (sd / np.sqrt(n))
+                    ci_low = mean - half_width
+                    ci_high = mean + half_width
+                else:
+                    ci_low = np.nan
+                    ci_high = np.nan
+
+                extra[dist][param]['ci_low'].append(ci_low)
+                extra[dist][param]['ci_high'].append(ci_high)
+
 
     fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(12, 12), sharex=True)
-    for row_idx, (param_trunc, param_zipf) in enumerate(zip(distribution_params['Truncated'],
-                                                               distribution_params['Zipf-Mandelbrot'])):
+    for row_idx, (param_trunc, param_zipf) in enumerate(
+        zip(distribution_params['Truncated'], distribution_params['Zipf-Mandelbrot'])
+    ):
         # Left: Truncated
         ax = axes[row_idx, 0]
         means = stats['Truncated'][param_trunc]['mean']
@@ -94,3 +127,30 @@ for tax_name, tax_list in taxonomies.items():
     outname = f'Parameters_by_k_{tax_name}.png'.replace(' ', '_')
     plt.savefig(outname)
     print(f"Figure saved to {outname}\n")
+
+    def write_table(dist_name: str):
+        params = distribution_params[dist_name]
+        fname = f"Table_{dist_name}_{tax_name}.txt".replace(' ', '_')
+        with open(fname, "w", encoding="utf-8") as f:
+            f.write(f"# Distribution: {dist_name}\n")
+            f.write(f"# Taxonomy: {tax_name}\n")
+            f.write("# Rows with R2 < 0 excluded.\n")
+            f.write("# Columns: for each parameter, CI_low, CI_high, CI_width (95% normal approx).\n")
+
+            cols = ["k"]
+            for p in params:
+                cols += [f"{p}_ci_low", f"{p}_ci_high", f"{p}_ci_width"]
+            f.write("\t".join(cols) + "\n")
+
+            for i, k in enumerate(k_values):
+                row = [str(k)]
+                for p in params:
+                    ci_low = extra[dist_name][p]['ci_low'][i]
+                    ci_high = extra[dist_name][p]['ci_high'][i]
+                    ci_width = (ci_high - ci_low) if (not pd.isna(ci_low) and not pd.isna(ci_high)) else np.nan
+                    row += [ _fmt(ci_low), _fmt(ci_high), _fmt(ci_width) ]
+                f.write("\t".join(row) + "\n")
+        print(f"Wrote table: {fname}")
+
+    write_table('Truncated')
+    write_table('Zipf-Mandelbrot')
